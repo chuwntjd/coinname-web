@@ -1,0 +1,27 @@
+{
+  "name": "코인네임 - 암호화폐 커뮤니티",
+  "short_name": "코인네임",
+  "description": "대한민국 최고의 암호화폐 커뮤니티. 비트코인, 이더리움 투자정보 실시간 공유",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["finance", "social", "news"],
+  "lang": "ko-KR",
+  "dir": "ltr"
+}
