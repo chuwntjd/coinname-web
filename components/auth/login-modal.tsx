@@ -98,12 +98,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
 
     try {
-      const success = await login(loginForm.email, loginForm.password)
-      if (success) {
+      const result = await login(loginForm.email, loginForm.password)
+      if (result.success) {
         onClose()
         setLoginForm({ email: "", password: "" })
       } else {
-        setError("이메일 또는 비밀번호가 올바르지 않습니다.")
+        setError(result.message || "이메일 또는 비밀번호가 올바르지 않습니다.")
       }
     } catch (error) {
       setError("로그인 중 오류가 발생했습니다.")
@@ -138,8 +138,8 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
 
     try {
-      const success = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.referralCode)
-      if (success) {
+      const result = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.referralCode)
+      if (result.success) {
         // 초대 코드가 있으면 보상 처리
         if (signupForm.referralCode && referralValidation?.isValid) {
           const newUserId = `user_${Date.now()}`

@@ -10,12 +10,17 @@ interface User {
   createdAt: string
 }
 
+interface AuthResult {
+  success: boolean
+  message?: string
+}
+
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string, referralCode?: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<AuthResult>
+  signup: (name: string, email: string, password: string, referralCode?: string) => Promise<AuthResult>
   logout: () => void
   updateProfile: (data: Partial<User>) => Promise<void>
 }
