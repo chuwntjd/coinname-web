@@ -1,6 +1,8 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 interface User {
   id: string
@@ -27,129 +29,185 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+function toAppUser(user: SupabaseUser): User {
+  const metadata = user.user_metadata || {}
+  const name =
+    typeof metadata.name === "string" && metadata.name.trim().length > 0
+      ? metadata.name
+      : user.email?.split("@")[0] || "사용자"
+  const avatar = typeof metadata.avatar === "string" ? metadata.avatar : undefined
+
+  return {
+    id: user.id,
+    name,
+    email: user.email || "",
+    avatar,
+    createdAt: user.created_at,
+  }
+}
+
+function getAuthErrorMessage(error: { message?: string }, fallback: string) {
+  const message = error.message?.toLowerCase() || ""
+
+  if (message.includes("invalid login credentials")) {
+    return "이메일 또는 비밀번호가 올바르지 않습니다."
+  }
+
+  if (message.includes("email not confirmed")) {
+    return "이메일 인증이 아직 완료되지 않았습니다. 받은 메일의 인증 링크를 먼저 눌러주세요."
+  }
+
+  if (message.includes("user already registered") || message.includes("already registered")) {
+    return "이미 가입된 이메일입니다. 로그인하거나 다른 이메일로 가입해주세요."
+  }
+
+  if (message.includes("database error saving new user")) {
+    return "회원 프로필 저장 중 DB 오류가 발생했습니다. Supabase의 users 테이블/가입 트리거 설정을 확인해야 합니다."
+  }
+
+  return error.message ? `${fallback} (${error.message})` : fallback
+}
+
+function createSignupPhonePlaceholder() {
+  const uniqueValue =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+  return `pending-${uniqueValue}`
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // 로컬스토리지에서 사용자 정보 복원
+    let isActive = true
+
     try {
-      const savedUser = localStorage.getItem("coinname_current_user")
-      if (savedUser) {
-        setUser(JSON.parse(savedUser))
+      const supabase = getSupabaseBrowserClient()
+
+      supabase.auth
+        .getSession()
+        .then(({ data, error }) => {
+          if (!isActive) return
+          if (error) {
+            console.error("Failed to load Supabase session:", error)
+            setUser(null)
+            return
+          }
+          setUser(data.session?.user ? toAppUser(data.session.user) : null)
+        })
+        .finally(() => {
+          if (isActive) setIsLoading(false)
+        })
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ? toAppUser(session.user) : null)
+        setIsLoading(false)
+      })
+
+      return () => {
+        isActive = false
+        subscription.unsubscribe()
       }
     } catch (error) {
-      console.error("Failed to load user from localStorage:", error)
-    } finally {
+      console.error("Supabase auth setup error:", error)
+      setUser(null)
       setIsLoading(false)
     }
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // 로컬스토리지에서 사용자 목록 가져오기
-      const users = JSON.parse(localStorage.getItem("coinname_users") || "[]")
-      const foundUser = users.find((u: any) => u.email === email && u.password === password)
+  const login = async (email: string, password: string): Promise<AuthResult> => {
+    const supabase = getSupabaseBrowserClient()
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    })
 
-      if (foundUser) {
-        const userWithoutPassword = {
-          id: foundUser.id,
-          name: foundUser.name,
-          email: foundUser.email,
-          avatar: foundUser.avatar,
-          createdAt: foundUser.createdAt,
-        }
-        setUser(userWithoutPassword)
-        localStorage.setItem("coinname_current_user", JSON.stringify(userWithoutPassword))
-        return true
+    if (error) {
+      return {
+        success: false,
+        message: getAuthErrorMessage(error, "로그인 중 오류가 발생했습니다."),
       }
-      return false
-    } catch (error) {
-      console.error("Login error:", error)
-      return false
     }
+
+    if (data.user) {
+      setUser(toAppUser(data.user))
+    }
+
+    return { success: !!data.user }
   }
 
-  const signup = async (name: string, email: string, password: string, referralCode?: string): Promise<boolean> => {
-    try {
-      // 기존 사용자 목록 가져오기
-      const users = JSON.parse(localStorage.getItem("coinname_users") || "[]")
+  const signup = async (name: string, email: string, password: string, referralCode?: string): Promise<AuthResult> => {
+    const supabase = getSupabaseBrowserClient()
+    const trimmedName = name.trim()
+    const normalizedEmail = email.trim().toLowerCase()
+    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(trimmedName)}`
 
-      // 이메일 중복 확인
-      if (users.some((u: any) => u.email === email)) {
-        return false
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizedEmail,
+      password,
+      options: {
+        data: {
+          name: trimmedName,
+          nickname: trimmedName,
+          full_name: trimmedName,
+          phone_number: createSignupPhonePlaceholder(),
+          avatar,
+          referral_code: referralCode || null,
+        },
+      },
+    })
+
+    if (error) {
+      return {
+        success: false,
+        message: getAuthErrorMessage(error, "회원가입에 실패했습니다. Supabase 설정을 확인해야 할 수 있습니다."),
       }
-
-      // 새 사용자 생성
-      const newUser = {
-        id: `user_${Date.now()}`,
-        name,
-        email,
-        password,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-        createdAt: new Date().toISOString(),
-      }
-
-      // 사용자 목록에 추가
-      users.push(newUser)
-      localStorage.setItem("coinname_users", JSON.stringify(users))
-
-      // 사용자 포인트 초기화
-      const userPoints = {
-        userId: newUser.id,
-        totalPoints: 0,
-        referralCode: `CN${newUser.id.slice(-4).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-        referrals: [],
-        pointsHistory: [],
-        missions: [],
-      }
-      localStorage.setItem(`coinname_user_points_${newUser.id}`, JSON.stringify(userPoints))
-
-      // 초대 코드 처리
-      if (referralCode) {
-        // 초대 코드 검증 및 보상 처리 로직 추가 가능
-        console.log("Referral code used:", referralCode)
-      }
-
-      // 자동 로그인
-      const userWithoutPassword = {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        avatar: newUser.avatar,
-        createdAt: newUser.createdAt,
-      }
-      setUser(userWithoutPassword)
-      localStorage.setItem("coinname_current_user", JSON.stringify(userWithoutPassword))
-
-      return true
-    } catch (error) {
-      console.error("Signup error:", error)
-      return false
     }
+
+    if (data.user && data.session) {
+      setUser(toAppUser(data.user))
+    }
+
+    return { success: !!data.user }
   }
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("coinname_current_user")
+    try {
+      const supabase = getSupabaseBrowserClient()
+      void supabase.auth.signOut()
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setUser(null)
+      localStorage.removeItem("coinname_current_user")
+    }
   }
 
   const updateProfile = async (data: Partial<User>): Promise<void> => {
     if (!user) return
 
-    try {
-      const updatedUser = { ...user, ...data }
-      setUser(updatedUser)
-      localStorage.setItem("coinname_current_user", JSON.stringify(updatedUser))
+    const supabase = getSupabaseBrowserClient()
+    const nextUser = { ...user, ...data }
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        name: nextUser.name,
+        nickname: nextUser.name,
+        full_name: nextUser.name,
+        avatar: nextUser.avatar,
+      },
+    })
 
-      // 사용자 목록에서도 업데이트
-      const users = JSON.parse(localStorage.getItem("coinname_users") || "[]")
-      const updatedUsers = users.map((u: any) => (u.id === user.id ? { ...u, ...data } : u))
-      localStorage.setItem("coinname_users", JSON.stringify(updatedUsers))
-    } catch (error) {
+    if (error) {
       console.error("Profile update error:", error)
       throw error
     }
+
+    setUser(nextUser)
   }
 
   return (
