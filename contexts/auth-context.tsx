@@ -61,7 +61,20 @@ function getAuthErrorMessage(error: { message?: string }, fallback: string) {
     return "이미 가입된 이메일입니다. 로그인하거나 다른 이메일로 가입해주세요."
   }
 
-  return fallback
+  if (message.includes("database error saving new user")) {
+    return "회원 프로필 저장 중 DB 오류가 발생했습니다. Supabase의 users 테이블/가입 트리거 설정을 확인해야 합니다."
+  }
+
+  return error.message ? `${fallback} (${error.message})` : fallback
+}
+
+function createSignupPhonePlaceholder() {
+  const uniqueValue =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+  return `pending-${uniqueValue}`
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -110,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<AuthResult> => {
     const supabase = getSupabaseBrowserClient()
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     })
 
@@ -130,17 +143,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signup = async (name: string, email: string, password: string, referralCode?: string): Promise<AuthResult> => {
     const supabase = getSupabaseBrowserClient()
-    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`
+    const trimmedName = name.trim()
+    const normalizedEmail = email.trim().toLowerCase()
+    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(trimmedName)}`
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
-          name,
-          nickname: name,
-          full_name: name,
-          phone_number: null,
+          name: trimmedName,
+          nickname: trimmedName,
+          full_name: trimmedName,
+          phone_number: createSignupPhonePlaceholder(),
           avatar,
           referral_code: referralCode || null,
         },
