@@ -68,15 +68,6 @@ function getAuthErrorMessage(error: { message?: string }, fallback: string) {
   return error.message ? `${fallback} (${error.message})` : fallback
 }
 
-function createSignupPhonePlaceholder() {
-  const uniqueValue =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-
-  return `pending-${uniqueValue}`
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -155,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: trimmedName,
           nickname: trimmedName,
           full_name: trimmedName,
-          phone_number: createSignupPhonePlaceholder(),
+          phone_number: null,
           avatar,
           referral_code: referralCode || null,
         },
