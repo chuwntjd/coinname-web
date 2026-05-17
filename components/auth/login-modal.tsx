@@ -75,28 +75,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setIsLoading(true)
     setError("")
 
-    // 데모 계정 체크
-    if (loginForm.email === "demo@coinname.kr" && loginForm.password === "demo123") {
-      try {
-        // 데모 계정이 없으면 생성
-        const users = JSON.parse(localStorage.getItem("coinname_users") || "[]")
-        if (!users.find((u: any) => u.email === "demo@coinname.kr")) {
-          const demoUser = {
-            id: "demo_user",
-            name: "데모 관리자",
-            email: "demo@coinname.kr",
-            password: "demo123",
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=demo",
-            createdAt: new Date().toISOString(),
-          }
-          users.push(demoUser)
-          localStorage.setItem("coinname_users", JSON.stringify(users))
-        }
-      } catch (error) {
-        console.error("Demo user creation error:", error)
-      }
-    }
-
     try {
       const success = await login(loginForm.email, loginForm.password)
       if (success) {
@@ -106,7 +84,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         setError("이메일 또는 비밀번호가 올바르지 않습니다.")
       }
     } catch (error) {
-      setError("로그인 중 오류가 발생했습니다.")
+      setError(error instanceof Error ? error.message : "로그인 중 오류가 발생했습니다.")
     } finally {
       setIsLoading(false)
     }
@@ -154,12 +132,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           confirmPassword: "",
           referralCode: "",
         })
-        alert("회원가입이 완료되었습니다! 🎉")
+        alert("회원가입이 완료되었습니다. 이메일 확인 설정이 켜져 있다면 메일 인증 후 로그인하세요.")
       } else {
-        setError("이미 존재하는 이메일입니다.")
+        setError("회원가입에 실패했습니다. 이미 가입된 이메일이거나 Supabase 설정을 확인해야 할 수 있습니다.")
       }
     } catch (error) {
-      setError("회원가입 중 오류가 발생했습니다.")
+      setError(error instanceof Error ? error.message : "회원가입 중 오류가 발생했습니다.")
     } finally {
       setIsLoading(false)
     }
