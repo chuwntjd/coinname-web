@@ -12,12 +12,17 @@ interface User {
   createdAt: string
 }
 
+interface AuthResult {
+  success: boolean
+  message?: string
+}
+
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string, referralCode?: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<AuthResult>
+  signup: (name: string, email: string, password: string, referralCode?: string) => Promise<AuthResult>
   logout: () => void
   updateProfile: (data: Partial<User>) => Promise<void>
 }
@@ -39,6 +44,24 @@ function toAppUser(user: SupabaseUser): User {
     avatar,
     createdAt: user.created_at,
   }
+}
+
+function getAuthErrorMessage(error: { message?: string }, fallback: string) {
+  const message = error.message?.toLowerCase() || ""
+
+  if (message.includes("invalid login credentials")) {
+    return "이메일 또는 비밀번호가 올바르지 않습니다."
+  }
+
+  if (message.includes("email not confirmed")) {
+    return "이메일 인증이 아직 완료되지 않았습니다. 받은 메일의 인증 링크를 먼저 눌러주세요."
+  }
+
+  if (message.includes("user already registered") || message.includes("already registered")) {
+    return "이미 가입된 이메일입니다. 로그인하거나 다른 이메일로 가입해주세요."
+  }
+
+  return fallback
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -84,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     const supabase = getSupabaseBrowserClient()
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -92,18 +115,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     if (error) {
-      console.error("Login error:", error)
-      return false
+      return {
+        success: false,
+        message: getAuthErrorMessage(error, "로그인 중 오류가 발생했습니다."),
+      }
     }
 
     if (data.user) {
       setUser(toAppUser(data.user))
     }
 
-    return !!data.user
+    return { success: !!data.user }
   }
 
-  const signup = async (name: string, email: string, password: string, referralCode?: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string, referralCode?: string): Promise<AuthResult> => {
     const supabase = getSupabaseBrowserClient()
     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`
 
@@ -123,15 +148,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     if (error) {
-      console.error("Signup error:", error)
-      return false
+      return {
+        success: false,
+        message: getAuthErrorMessage(error, "회원가입에 실패했습니다. Supabase 설정을 확인해야 할 수 있습니다."),
+      }
     }
 
     if (data.user && data.session) {
       setUser(toAppUser(data.user))
     }
 
-    return !!data.user
+    return { success: !!data.user }
   }
 
   const logout = () => {
