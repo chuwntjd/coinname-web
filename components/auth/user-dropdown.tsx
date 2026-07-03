@@ -20,9 +20,10 @@ import type { UserPoints } from "@/types/user-level"
 interface UserDropdownProps {
   user: {
     id: string
-    name: string
     email: string
-    avatar?: string
+    username?: string | null
+    displayName?: string | null
+    avatar?: string | null
     createdAt: string
   }
   userPoints?: UserPoints | null
@@ -47,15 +48,15 @@ export function UserDropdown({ user, userPoints }: UserDropdownProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name || "사용자"} />
-              <AvatarFallback>{(user.name || "U").charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.displayName || user.username || "사용자"} />
+              <AvatarFallback>{(user.displayName || user.username || "U").charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user.name || "사용자"}</p>
+              <p className="text-sm font-medium leading-none">{user.displayName || user.username || "사용자"}</p>
               <p className="text-xs leading-none text-muted-foreground">{user.email || ""}</p>
               {userPoints && userPoints.currentLevel && (
                 <div className="flex items-center space-x-2 mt-2">

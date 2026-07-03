@@ -33,22 +33,22 @@ export default function LevelsPage() {
                     <p className="text-gray-600">미션을 완료하고 친구를 초대하여 등급을 올려보세요!</p>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="text-center p-3 bg-amber-50 rounded-lg">
-                      <div className="text-2xl mb-1">🥉</div>
-                      <div className="text-sm font-medium">브론즈</div>
+                  <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="text-center p-2 sm:p-3 bg-amber-50 rounded-lg">
+                      <div className="text-xl sm:text-2xl mb-1">🥉</div>
+                      <div className="text-xs sm:text-sm font-medium">브론즈</div>
                     </div>
-                    <div className="text-center p-3 bg-gray-50 rounded-lg">
-                      <div className="text-2xl mb-1">🥈</div>
-                      <div className="text-sm font-medium">실버</div>
+                    <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xl sm:text-2xl mb-1">🥈</div>
+                      <div className="text-xs sm:text-sm font-medium">실버</div>
                     </div>
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                      <div className="text-2xl mb-1">🥇</div>
-                      <div className="text-sm font-medium">골드</div>
+                    <div className="text-center p-2 sm:p-3 bg-yellow-50 rounded-lg">
+                      <div className="text-xl sm:text-2xl mb-1">🥇</div>
+                      <div className="text-xs sm:text-sm font-medium">골드</div>
                     </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                      <div className="text-2xl mb-1">👑</div>
-                      <div className="text-sm font-medium">마스터</div>
+                    <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
+                      <div className="text-xl sm:text-2xl mb-1">👑</div>
+                      <div className="text-xs sm:text-sm font-medium">마스터</div>
                     </div>
                   </div>
 
@@ -121,9 +121,9 @@ export default function LevelsPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             {/* 헤더 */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2">등급 시스템</h1>
-              <p className="text-gray-600">미션을 완료하고 친구를 초대하여 등급을 올려보세요!</p>
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-4xl font-bold mb-2">등급 시스템</h1>
+              <p className="text-sm sm:text-base text-gray-600">미션을 완료하고 친구를 초대하여 등급을 올려보세요!</p>
             </div>
 
             {/* 메인 콘텐츠 */}
@@ -137,16 +137,16 @@ export default function LevelsPage() {
               <div className="lg:col-span-2">
                 <Tabs defaultValue="missions" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="missions" className="flex items-center space-x-1">
-                      <Target className="h-4 w-4" />
+                    <TabsTrigger value="missions" className="flex items-center justify-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                      <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>미션</span>
                     </TabsTrigger>
-                    <TabsTrigger value="referral" className="flex items-center space-x-1">
-                      <Users className="h-4 w-4" />
-                      <span>친구초대</span>
+                    <TabsTrigger value="referral" className="flex items-center justify-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">친구</span>초대
                     </TabsTrigger>
-                    <TabsTrigger value="history" className="flex items-center space-x-1">
-                      <History className="h-4 w-4" />
+                    <TabsTrigger value="history" className="flex items-center justify-center gap-1 text-xs sm:text-sm px-1 sm:px-3">
+                      <History className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>내역</span>
                     </TabsTrigger>
                   </TabsList>

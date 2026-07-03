@@ -22,9 +22,9 @@ export function RealTimeStats() {
 
   if (loading && !stats) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">코인네임과 함께하는 투자자들</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 mb-8 sm:mb-16 mx-2 sm:mx-0">
+        <h2 className="text-lg sm:text-2xl font-bold text-center text-gray-900 mb-4 sm:mb-8">코인네임과 함께하는 투자자들</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="text-center animate-pulse">
               <div className="h-8 bg-gray-200 rounded mb-2 mx-auto w-20"></div>
@@ -38,8 +38,8 @@ export function RealTimeStats() {
 
   if (error && !stats) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">코인네임과 함께하는 투자자들</h2>
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 mb-8 sm:mb-16 mx-2 sm:mx-0">
+        <h2 className="text-lg sm:text-2xl font-bold text-center text-gray-900 mb-4 sm:mb-8">코인네임과 함께하는 투자자들</h2>
         <div className="text-center text-red-600 mb-4">
           <p>데이터를 불러올 수 없습니다: {error}</p>
           <Button onClick={refresh} variant="outline" size="sm" className="mt-2 bg-transparent">
@@ -85,34 +85,34 @@ export function RealTimeStats() {
   ]
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8 mb-16">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">코인네임과 함께하는 투자자들</h2>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+    <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 mb-8 sm:mb-16 mx-2 sm:mx-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-8 gap-2">
+        <h2 className="text-lg sm:text-2xl font-bold text-gray-900">코인네임과 함께하는 투자자들</h2>
+        <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
           <div className="flex items-center space-x-1">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span>실시간</span>
           </div>
-          {lastUpdated && <span className="text-xs">마지막 업데이트: {formatTime(lastUpdated)}</span>}
+          {lastUpdated && <span className="text-xs hidden sm:inline">마지막 업데이트: {formatTime(lastUpdated)}</span>}
           <Button onClick={refresh} variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={loading}>
             <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
         {statsData.map((stat, index) => {
           const Icon = stat.icon
           return (
             <div key={index} className="text-center group">
-              <div className="flex items-center justify-center mb-3">
-                <div className="p-2 rounded-lg bg-gray-50 group-hover:bg-gray-100 transition-colors">
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
+              <div className="flex items-center justify-center mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                 </div>
               </div>
-              <div className={`text-3xl font-bold ${stat.color} mb-2 transition-all duration-300`}>{stat.value}</div>
-              <div className="text-gray-600 font-medium mb-1">{stat.label}</div>
-              <div className="text-xs text-gray-500">{stat.change}</div>
+              <div className={`text-xl sm:text-3xl font-bold ${stat.color} mb-1 sm:mb-2 transition-all duration-300`}>{stat.value}</div>
+              <div className="text-xs sm:text-base text-gray-600 font-medium mb-0.5 sm:mb-1">{stat.label}</div>
+              <div className="text-xs text-gray-500 hidden sm:block">{stat.change}</div>
             </div>
           )
         })}

@@ -82,7 +82,7 @@ export const metadata: Metadata = {
   verification: {
     google: "your-google-verification-code",
     other: {
-      "naver-site-verification": "your-naver-verification-code",
+      "naver-site-verification": "f43bfe7cd87d092ff2eb2a789e8b7c1e5bedabd8",
     },
   },
   alternates: {
@@ -94,6 +94,7 @@ export const metadata: Metadata = {
   },
   category: "finance",
   classification: "암호화폐 커뮤니티",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -105,7 +106,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         {/* 네이버 웹마스터 도구 */}
-        <meta name="naver-site-verification" content="your-naver-verification-code" />
+        <meta name="naver-site-verification" content="f43bfe7cd87d092ff2eb2a789e8b7c1e5bedabd8" />
 
         {/* 구글 서치 콘솔 */}
         <meta name="google-site-verification" content="your-google-verification-code" />
