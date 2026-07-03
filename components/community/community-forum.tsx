@@ -2,229 +2,110 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { PostCard } from "./post-card"
-import { CreatePostModal } from "./create-post-modal"
-import { PostDetailModal } from "./post-detail-modal"
-import { PlusCircle, Search, MessageSquare } from "lucide-react"
-import { useUserPoints } from "@/hooks/use-user-points"
-import type { User } from "@/types/auth"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { 
+  PlusCircle, 
+  Search, 
+  MessageSquare, 
+  Heart, 
+  MessageCircle,
+  Loader2,
+  Trash2
+} from "lucide-react"
+import { usePosts, useComments, type Post } from "@/hooks/use-posts"
+import { useAuth } from "@/contexts/auth-context"
+import { formatDistanceToNow } from "date-fns"
+import { ko } from "date-fns/locale"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-interface Post {
-  id: string
-  title: string
-  content: string
-  author: User
-  category: string
-  createdAt: Date
-  likes: number
-  comments: number
-  tags: string[]
-  isLiked?: boolean
-}
+const categories = [
+  { id: "all", name: "전체", icon: "📋" },
+  { id: "general", name: "일반", icon: "💬" },
+  { id: "trading", name: "거래 분석", icon: "📈" },
+  { id: "news", name: "뉴스", icon: "📰" },
+  { id: "technical", name: "기술 분석", icon: "🔍" },
+  { id: "question", name: "질문", icon: "❓" },
+]
 
-interface CommunityForumProps {
-  user: User | null
-}
-
-export function CommunityForum({ user }: CommunityForumProps) {
-  const [posts, setPosts] = useState<Post[]>([])
-  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
+export function CommunityForum() {
+  const { user, isAuthenticated } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [sortBy, setSortBy] = useState<"latest" | "popular" | "trending">("latest")
   const [searchQuery, setSearchQuery] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
-  const { triggerForumPostMission } = useUserPoints(user?.id)
+  
+  const { posts, isLoading, error, createPost, deletePost, likePost, refresh } = usePosts(
+    selectedCategory === "all" ? undefined : selectedCategory
+  )
 
-  const categories = [
-    { id: "all", name: "전체", icon: "📋" },
-    { id: "trading", name: "거래 분석", icon: "📈" },
-    { id: "news", name: "뉴스", icon: "📰" },
-    { id: "technical", name: "기술 분석", icon: "🔍" },
-    { id: "discussion", name: "자유 토론", icon: "💬" },
-    { id: "question", name: "질문", icon: "❓" },
-  ]
-
-  // 초기 게시글 데이터
-  useEffect(() => {
-    const initialPosts: Post[] = [
-      {
-        id: "1",
-        title: "비트코인 50,000달러 돌파! 다음 목표는?",
-        content: "비트코인이 드디어 50,000달러를 돌파했습니다. 기술적 분석을 통해 다음 저항선을 예측해보겠습니다...",
-        author: { name: "크립토분석가", avatar: "/placeholder.svg?height=40&width=40&text=크", id: "crypto1" },
-        category: "trading",
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        likes: 24,
-        comments: 8,
-        tags: ["비트코인", "기술분석", "50000달러"],
-      },
-      {
-        id: "2",
-        title: "이더리움 2.0 업데이트 후 가격 전망",
-        content: "이더리움 2.0 업데이트가 완료된 후 가격 변동성과 향후 전망에 대해 논의해보겠습니다...",
-        author: { name: "이더리움홀더", avatar: "/placeholder.svg?height=40&width=40&text=이", id: "eth1" },
-        category: "technical",
-        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-        likes: 18,
-        comments: 12,
-        tags: ["이더리움", "ETH2.0", "업데이트"],
-      },
-      {
-        id: "3",
-        title: "알트코인 시즌이 올까요?",
-        content: "비트코인 도미넌스가 하락하고 있는데, 이번에 알트코인 시즌이 올 가능성이 있을까요?",
-        author: { name: "알트코인러버", avatar: "/placeholder.svg?height=40&width=40&text=알", id: "alt1" },
-        category: "discussion",
-        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-        likes: 31,
-        comments: 15,
-        tags: ["알트코인", "시즌", "도미넌스"],
-      },
-      {
-        id: "4",
-        title: "DeFi 프로토콜 추천 부탁드립니다",
-        content: "DeFi 투자를 시작하려고 하는데, 안전하고 수익률 좋은 프로토콜 추천해주세요!",
-        author: { name: "DeFi초보", avatar: "/placeholder.svg?height=40&width=40&text=D", id: "defi1" },
-        category: "question",
-        createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-        likes: 12,
-        comments: 22,
-        tags: ["DeFi", "추천", "초보"],
-      },
-      {
-        id: "5",
-        title: "SEC 비트코인 ETF 승인 소식",
-        content: "SEC가 비트코인 ETF를 승인했다는 소식이 있는데, 이것이 시장에 미칠 영향은?",
-        author: { name: "뉴스헌터", avatar: "/placeholder.svg?height=40&width=40&text=뉴", id: "news1" },
-        category: "news",
-        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-        likes: 45,
-        comments: 28,
-        tags: ["SEC", "ETF", "승인", "뉴스"],
-      },
-    ]
-
-    // 로컬 스토리지에서 게시글 불러오기
-    const savedPosts = localStorage.getItem("community_posts")
-    if (savedPosts) {
-      const parsedPosts = JSON.parse(savedPosts).map((post: any) => ({
-        ...post,
-        createdAt: new Date(post.createdAt),
-      }))
-      setPosts([...initialPosts, ...parsedPosts])
-    } else {
-      setPosts(initialPosts)
-    }
-  }, [])
-
-  // 필터링 및 정렬
-  useEffect(() => {
-    let filtered = posts
-
-    // 카테고리 필터
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((post) => post.category === selectedCategory)
-    }
-
-    // 검색 필터
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (post) =>
-          post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
+  const filteredPosts = searchQuery 
+    ? posts.filter(post => 
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
+    : posts
+
+  const handleCreatePost = async (title: string, content: string, category: string) => {
+    const result = await createPost(title, content, category)
+    if (result.success) {
+      setShowCreateModal(false)
     }
-
-    // 정렬
-    switch (sortBy) {
-      case "latest":
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        break
-      case "popular":
-        filtered.sort((a, b) => b.likes - a.likes)
-        break
-      case "trending":
-        filtered.sort((a, b) => b.likes + b.comments - (a.likes + a.comments))
-        break
-    }
-
-    setFilteredPosts(filtered)
-  }, [posts, selectedCategory, searchQuery, sortBy])
-
-  const handleCreatePost = (newPost: Omit<Post, "id" | "createdAt" | "likes" | "comments">) => {
-    const post: Post = {
-      ...newPost,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      likes: 0,
-      comments: 0,
-    }
-
-    const updatedPosts = [post, ...posts]
-    setPosts(updatedPosts)
-
-    // 로컬 스토리지에 저장
-    const postsToSave = updatedPosts.filter((p) => !["1", "2", "3", "4", "5"].includes(p.id))
-    localStorage.setItem("community_posts", JSON.stringify(postsToSave))
-
-    // 포럼 포스트 미션 트리거
-    if (user) {
-      triggerForumPostMission()
-    }
+    return result
   }
 
-  const handleLikePost = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-              isLiked: !post.isLiked,
-            }
-          : post,
-      ),
-    )
+  const handleLikePost = async (postId: string) => {
+    await likePost(postId)
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    const result = await deletePost(postId)
+    if (result.success && selectedPost?.id === postId) {
+      setSelectedPost(null)
+    }
   }
 
   return (
     <div className="space-y-6">
       {/* 상단 컨트롤 */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-bold text-gray-900">커뮤니티 포럼</h2>
-          {user && (
-            <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
-              <PlusCircle className="h-4 w-4 mr-2" />글 작성
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">커뮤니티 포럼</h2>
+          {isAuthenticated && (
+            <Button onClick={() => setShowCreateModal(true)}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              글 작성
             </Button>
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
-          {/* 검색 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 정렬 */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="latest">최신순</option>
-            <option value="popular">인기순</option>
-            <option value="trending">트렌딩</option>
-          </select>
+        <div className="relative w-full sm:w-auto">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 w-full sm:w-64"
+          />
         </div>
       </div>
 
@@ -234,10 +115,10 @@ export function CommunityForum({ user }: CommunityForumProps) {
           <button
             key={category.id}
             onClick={() => setSelectedCategory(category.id)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedCategory === category.id
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
             <span>{category.icon}</span>
@@ -248,46 +129,450 @@ export function CommunityForum({ user }: CommunityForumProps) {
 
       {/* 게시글 목록 */}
       <div className="space-y-4">
-        {filteredPosts.length > 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          ))
+        ) : error ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-destructive">{error}</p>
+              <Button onClick={refresh} variant="outline" className="mt-4">
+                다시 시도
+              </Button>
+            </CardContent>
+          </Card>
+        ) : filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}
+              currentUserId={user?.id}
               onLike={() => handleLikePost(post.id)}
+              onDelete={() => handleDeletePost(post.id)}
               onClick={() => setSelectedPost(post)}
             />
           ))
         ) : (
-          <div className="text-center py-12">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">게시글이 없습니다.</p>
-            {user && (
-              <Button onClick={() => setShowCreateModal(true)} className="mt-4 bg-blue-600 hover:bg-blue-700">
-                첫 번째 글 작성하기
-              </Button>
-            )}
-          </div>
+          <Card>
+            <CardContent className="py-12 text-center">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">게시글이 없습니다.</p>
+              {isAuthenticated && (
+                <Button onClick={() => setShowCreateModal(true)} className="mt-4">
+                  첫 번째 글 작성하기
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
 
-      {/* 모달들 */}
-      {showCreateModal && user && (
-        <CreatePostModal
-          user={user}
-          categories={categories.filter((c) => c.id !== "all")}
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreatePost}
-        />
-      )}
+      {/* 글 작성 모달 */}
+      <CreatePostModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreatePost}
+        categories={categories.filter(c => c.id !== "all")}
+      />
 
+      {/* 게시글 상세 모달 */}
       {selectedPost && (
         <PostDetailModal
           post={selectedPost}
-          user={user}
+          currentUserId={user?.id}
+          isAuthenticated={isAuthenticated}
           onClose={() => setSelectedPost(null)}
           onLike={() => handleLikePost(selectedPost.id)}
+          onDelete={() => handleDeletePost(selectedPost.id)}
         />
       )}
     </div>
+  )
+}
+
+// 게시글 카드 컴포넌트
+function PostCard({ 
+  post, 
+  currentUserId,
+  onLike, 
+  onDelete,
+  onClick 
+}: { 
+  post: Post
+  currentUserId?: string
+  onLike: () => void
+  onDelete: () => void
+  onClick: () => void 
+}) {
+  const categoryInfo = categories.find(c => c.id === post.category)
+  const isOwner = currentUserId === post.user_id
+
+  return (
+    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={post.profiles?.avatar_url || undefined} />
+              <AvatarFallback>
+                {(post.profiles?.display_name || post.profiles?.username || "U").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium text-sm">
+                {post.profiles?.display_name || post.profiles?.username || "익명"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko })}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {categoryInfo && (
+              <Badge variant="secondary">
+                {categoryInfo.icon} {categoryInfo.name}
+              </Badge>
+            )}
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete()
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
+        <p className="text-muted-foreground text-sm line-clamp-2">{post.content}</p>
+        <div className="flex items-center gap-4 mt-4">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onLike()
+            }}
+            className={`flex items-center gap-1 text-sm ${
+              post.user_has_liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+            } transition-colors`}
+          >
+            <Heart className={`h-4 w-4 ${post.user_has_liked ? "fill-current" : ""}`} />
+            <span>{post.likes_count}</span>
+          </button>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <MessageCircle className="h-4 w-4" />
+            <span>{post.comments_count}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// 글 작성 모달 컴포넌트
+function CreatePostModal({ 
+  isOpen, 
+  onClose, 
+  onSubmit,
+  categories 
+}: { 
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (title: string, content: string, category: string) => Promise<{ success: boolean; error?: string }>
+  categories: typeof categories
+}) {
+  const [title, setTitle] = useState("")
+  const [content, setContent] = useState("")
+  const [category, setCategory] = useState("general")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
+
+    const result = await onSubmit(title, content, category)
+    
+    if (result.success) {
+      setTitle("")
+      setContent("")
+      setCategory("general")
+      onClose()
+    } else {
+      setError(result.error || "게시글 작성에 실패했습니다")
+    }
+    
+    setIsSubmitting(false)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>새 게시글 작성</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 py-4">
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                {error}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="category">카테고리</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.icon} {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">제목</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="제목을 입력하세요"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="content">내용</Label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="내용을 입력하세요"
+                rows={6}
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              취소
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  작성 중...
+                </>
+              ) : (
+                "작성하기"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// 게시글 상세 모달 컴포넌트
+function PostDetailModal({ 
+  post, 
+  currentUserId,
+  isAuthenticated,
+  onClose, 
+  onLike,
+  onDelete 
+}: { 
+  post: Post
+  currentUserId?: string
+  isAuthenticated: boolean
+  onClose: () => void
+  onLike: () => void
+  onDelete: () => void
+}) {
+  const { comments, isLoading, createComment, deleteComment, likeComment } = useComments(post.id)
+  const [newComment, setNewComment] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const categoryInfo = categories.find(c => c.id === post.category)
+  const isOwner = currentUserId === post.user_id
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newComment.trim()) return
+
+    setIsSubmitting(true)
+    const result = await createComment(newComment)
+    if (result.success) {
+      setNewComment("")
+    }
+    setIsSubmitting(false)
+  }
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={post.profiles?.avatar_url || undefined} />
+                <AvatarFallback>
+                  {(post.profiles?.display_name || post.profiles?.username || "U").charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium text-sm">
+                  {post.profiles?.display_name || post.profiles?.username || "익명"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: ko })}
+                </p>
+              </div>
+            </div>
+            {categoryInfo && (
+              <Badge variant="secondary">
+                {categoryInfo.icon} {categoryInfo.name}
+              </Badge>
+            )}
+          </div>
+          <DialogTitle className="text-xl mt-4">{post.title}</DialogTitle>
+        </DialogHeader>
+
+        <div className="py-4">
+          <p className="text-muted-foreground whitespace-pre-wrap">{post.content}</p>
+          
+          <div className="flex items-center gap-4 mt-6 pt-4 border-t">
+            <button
+              onClick={onLike}
+              className={`flex items-center gap-1 text-sm ${
+                post.user_has_liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+              } transition-colors`}
+            >
+              <Heart className={`h-4 w-4 ${post.user_has_liked ? "fill-current" : ""}`} />
+              <span>{post.likes_count}</span>
+            </button>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <MessageCircle className="h-4 w-4" />
+              <span>{comments.length}</span>
+            </div>
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-destructive hover:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                삭제
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* 댓글 섹션 */}
+        <div className="border-t pt-4">
+          <h4 className="font-semibold mb-4">댓글 ({comments.length})</h4>
+          
+          {isAuthenticated && (
+            <form onSubmit={handleSubmitComment} className="mb-4">
+              <div className="flex gap-2">
+                <Input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="댓글을 입력하세요..."
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={isSubmitting || !newComment.trim()}>
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "작성"}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-4">
+            {isLoading ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex gap-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              ))
+            ) : comments.length > 0 ? (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={comment.profiles?.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {(comment.profiles?.display_name || comment.profiles?.username || "U").charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">
+                        {comment.profiles?.display_name || comment.profiles?.username || "익명"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ko })}
+                      </span>
+                    </div>
+                    <p className="text-sm mt-1">{comment.content}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        onClick={() => likeComment(comment.id)}
+                        className={`flex items-center gap-1 text-xs ${
+                          comment.user_has_liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+                        } transition-colors`}
+                      >
+                        <Heart className={`h-3 w-3 ${comment.user_has_liked ? "fill-current" : ""}`} />
+                        <span>{comment.likes_count}</span>
+                      </button>
+                      {currentUserId === comment.user_id && (
+                        <button
+                          onClick={() => deleteComment(comment.id)}
+                          className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground text-sm py-4">
+                아직 댓글이 없습니다.
+              </p>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

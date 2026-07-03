@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/contexts/auth-context"
+import { KakaoLoginButton } from "@/components/auth/kakao-login-button"
 import { validateReferralCode, processReferralReward } from "@/utils/referral-system"
 import { Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react"
 
@@ -75,16 +76,38 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setIsLoading(true)
     setError("")
 
+    // 데모 계정 체크
+    if (loginForm.email === "demo@coinname.kr" && loginForm.password === "demo123") {
+      try {
+        // 데모 계정이 없으면 생성
+        const users = JSON.parse(localStorage.getItem("coinname_users") || "[]")
+        if (!users.find((u: any) => u.email === "demo@coinname.kr")) {
+          const demoUser = {
+            id: "demo_user",
+            name: "데모 관리자",
+            email: "demo@coinname.kr",
+            password: "demo123",
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=demo",
+            createdAt: new Date().toISOString(),
+          }
+          users.push(demoUser)
+          localStorage.setItem("coinname_users", JSON.stringify(users))
+        }
+      } catch (error) {
+        console.error("Demo user creation error:", error)
+      }
+    }
+
     try {
       const result = await login(loginForm.email, loginForm.password)
       if (result.success) {
         onClose()
         setLoginForm({ email: "", password: "" })
       } else {
-        setError(result.message || "이메일 또는 비밀번호가 올바르지 않습니다.")
+        setError(result.error || "이메일 또는 비밀번호가 올바르지 않습니다.")
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "로그인 중 오류가 발생했습니다.")
+      setError("로그인 중 오류가 발생했습니다.")
     } finally {
       setIsLoading(false)
     }
@@ -116,7 +139,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
 
     try {
-      const result = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.referralCode)
+      const result = await signup(signupForm.email, signupForm.password, signupForm.name)
       if (result.success) {
         // 초대 코드가 있으면 보상 처리
         if (signupForm.referralCode && referralValidation?.isValid) {
@@ -132,12 +155,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           confirmPassword: "",
           referralCode: "",
         })
-        alert("회원가입이 완료되었습니다. 이메일 확인 설정이 켜져 있다면 메일 인증 후 로그인하세요.")
+        alert("회원가입이 완료되었습니다! 이메일을 확인해 인증을 완료해주세요.")
       } else {
-        setError(result.message || "회원가입에 실패했습니다. 이미 가입된 이메일이거나 Supabase 설정을 확인해야 할 수 있습니다.")
+        setError(result.error || "회원가입 중 오류가 발생했습니다.")
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "회원가입 중 오류가 발생했습니다.")
+      setError("회원가입 중 오류가 발생했습니다.")
     } finally {
       setIsLoading(false)
     }
@@ -216,6 +239,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 {isLoading ? "로그인 중..." : "로그인"}
               </Button>
             </form>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">또는</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <KakaoLoginButton onError={setError} />
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">
@@ -305,6 +334,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 {isLoading ? "가입 중..." : "회원가입"}
               </Button>
             </form>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">또는</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <KakaoLoginButton onError={setError} />
           </TabsContent>
         </Tabs>
       </DialogContent>

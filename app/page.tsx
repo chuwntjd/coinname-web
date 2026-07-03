@@ -32,21 +32,21 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mx-auto px-3 sm:px-4 py-8 sm:py-16">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-8">
-            <TrendingUp className="w-10 h-10 text-white" />
+        <div className="text-center mb-8 sm:mb-16">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6 sm:mb-8">
+            <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4 sm:mb-6">
             코인네임
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
             대한민국 최고의 암호화폐 커뮤니티 플랫폼
             <br />
             전문가 분석부터 실시간 채팅까지, 모든 것을 한곳에서
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
             <Link href="/community">
               <Button
                 size="lg"
@@ -68,44 +68,44 @@ export default function HomePage() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-16">
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
+            <CardContent className="p-3 sm:p-6 text-center">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg mb-2 sm:mb-4">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">실시간 분석</h3>
-              <p className="text-sm text-gray-600">전문가들의 실시간 시장 분석과 투자 인사이트</p>
+              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">실시간 분석</h3>
+              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">전문가들의 실시간 시장 분석과 투자 인사이트</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4">
-                <Users className="w-6 h-6 text-green-600" />
+            <CardContent className="p-3 sm:p-6 text-center">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg mb-2 sm:mb-4">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">활발한 커뮤니티</h3>
-              <p className="text-sm text-gray-600">수천 명의 투자자들과 경험과 정보 공유</p>
+              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">활발한 커뮤니티</h3>
+              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">수천 명의 투자자들과 경험과 정보 공유</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mb-4">
-                <MessageCircle className="w-6 h-6 text-purple-600" />
+            <CardContent className="p-3 sm:p-6 text-center">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg mb-2 sm:mb-4">
+                <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">실시간 채팅</h3>
-              <p className="text-sm text-gray-600">24시간 실시간 채팅으로 즉시 소통</p>
+              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">실시간 채팅</h3>
+              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">24시간 실시간 채팅으로 즉시 소통</p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mb-4">
-                <Shield className="w-6 h-6 text-orange-600" />
+            <CardContent className="p-3 sm:p-6 text-center">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg mb-2 sm:mb-4">
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">신뢰할 수 있는</h3>
-              <p className="text-sm text-gray-600">검증된 정보와 안전한 투자 환경</p>
+              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">신뢰할 수 있는</h3>
+              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">검증된 정보와 안전한 투자 환경</p>
             </CardContent>
           </Card>
         </div>
@@ -114,9 +114,9 @@ export default function HomePage() {
         <RealTimeStats />
 
         {/* CTA Section */}
-        <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-white">
-          <h2 className="text-3xl font-bold mb-4">지금 바로 시작하세요</h2>
-          <p className="text-xl mb-8 opacity-90">코인네임 커뮤니티에 참여하고 더 나은 투자 결정을 내리세요</p>
+        <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl p-6 sm:p-12 text-white mx-2 sm:mx-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4">지금 바로 시작하세요</h2>
+          <p className="text-sm sm:text-lg md:text-xl mb-6 sm:mb-8 opacity-90">코인네임 커뮤니티에 참여하고 더 나은 투자 결정을 내리세요</p>
           <Link href="/community">
             <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100">
               무료로 시작하기

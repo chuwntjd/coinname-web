@@ -18,7 +18,9 @@ interface UserProfileModalProps {
   onClose: () => void
   user: {
     id: string
-    name: string
+    name?: string
+    username?: string | null
+    displayName?: string | null
     email: string
     avatar?: string
     createdAt: string
@@ -30,9 +32,14 @@ export function UserProfileModal({ isOpen, onClose, user, userPoints }: UserProf
   const { updateProfile } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const displayName =
+    user.displayName || user.name || user.username || user.email?.split("@")[0] || "사용자"
+  const avatarInitial = displayName.charAt(0).toUpperCase()
+
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
+    name: user.displayName || user.name || user.username || "",
+    email: user.email || "",
   })
   const [showAssetVerification, setShowAssetVerification] = useState(false)
 
@@ -94,8 +101,8 @@ export function UserProfileModal({ isOpen, onClose, user, userPoints }: UserProf
             {/* 프로필 이미지 및 기본 정보 */}
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={displayName} />
+                <AvatarFallback className="text-2xl">{avatarInitial}</AvatarFallback>
               </Avatar>
 
               {userPoints && (
@@ -127,7 +134,7 @@ export function UserProfileModal({ isOpen, onClose, user, userPoints }: UserProf
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 ) : (
-                  <div className="p-2 bg-gray-50 rounded border">{user.name}</div>
+                  <div className="p-2 bg-gray-50 rounded border">{displayName}</div>
                 )}
               </div>
 

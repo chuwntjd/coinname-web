@@ -92,34 +92,34 @@ export default function CommunityPage() {
 
         <main className="pt-16">
           {/* 커뮤니티 헤더 */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 sm:py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-4xl font-bold mb-4">코인네임 커뮤니티</h1>
-                  <p className="text-xl text-blue-100">암호화폐 투자자들과 소통하고 정보를 공유하세요</p>
-                  <div className="mt-4 flex items-center space-x-6 text-sm">
-                    <span>📈 실시간 투자 분석</span>
+                  <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">코인네임 커뮤니티</h1>
+                  <p className="text-sm sm:text-xl text-blue-100">암호화폐 투자자들과 소통하고 정보를 공유하세요</p>
+                  <div className="mt-3 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-6 text-xs sm:text-sm">
+                    <span>📈 실시간 분석</span>
                     <span>💬 24시간 채팅</span>
-                    <span>🔥 전문가 의견</span>
-                    <span>📊 시장 동향</span>
+                    <span className="hidden sm:inline">🔥 전문가 의견</span>
+                    <span className="hidden sm:inline">📊 시장 동향</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   {user ? (
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
                       <img
-                        src={user.avatar || `/placeholder.svg?height=40&width=40&text=${user.name.charAt(0)}`}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-full border-2 border-white"
+                        src={user.avatar || `/placeholder.svg?height=40&width=40&text=${(user.displayName || user.username || "U").charAt(0)}`}
+                        alt={user.displayName || user.username || "사용자"}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white"
                       />
                       <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-blue-200">{user.email}</div>
+                        <div className="font-medium text-sm sm:text-base">{user.displayName || user.username || "사용자"}</div>
+                        <div className="text-xs sm:text-sm text-blue-200 hidden sm:block">{user.email}</div>
                       </div>
                     </div>
                   ) : (
-                    <Button onClick={() => setShowLoginModal(true)} className="bg-white text-blue-600 hover:bg-blue-50">
+                    <Button onClick={() => setShowLoginModal(true)} className="bg-white text-blue-600 hover:bg-blue-50 text-sm">
                       <Users className="h-4 w-4 mr-2" />
                       로그인
                     </Button>
@@ -129,10 +129,10 @@ export default function CommunityPage() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
               {/* 메인 콘텐츠 */}
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-3 order-2 lg:order-1">
                 {/* 탭 네비게이션 */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                   <div className="flex border-b border-gray-200">
@@ -161,13 +161,13 @@ export default function CommunityPage() {
                   </div>
 
                   <div className="p-6">
-                    {activeTab === "forum" ? <CommunityForum user={user} /> : <LiveChat user={user} />}
+                    {activeTab === "forum" ? <CommunityForum /> : <LiveChat user={user} />}
                   </div>
                 </div>
               </div>
 
               {/* 사이드바 */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
                 <CommunityStats />
                 <TrendingTopics />
               </div>
