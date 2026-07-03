@@ -99,7 +99,7 @@ export default function CommunityPage() {
                   <h1 className="text-4xl font-bold mb-4">코인네임 커뮤니티</h1>
                   <p className="text-xl text-blue-100">암호화폐 투자자들과 소통하고 정보를 공유하세요</p>
                   <div className="mt-4 flex items-center space-x-6 text-sm">
-                    <span>📈 실시간 투자</span>
+                    <span>📈 실시간 투자 야호</span>
                     <span>💬 24시간 채팅</span>
                     <span>🔥 전문가 의견</span>
                     <span>📊 시장 동향</span>
