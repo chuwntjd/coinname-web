@@ -134,6 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       options: {
         redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
           `${window.location.origin}/auth/callback`,
+        // 카카오 콘솔에서 승인된 동의 항목(닉네임)만 요청 (KOE205 방지)
+        scopes: "profile_nickname",
       },
     })
 

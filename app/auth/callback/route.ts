@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      const response = NextResponse.redirect(`${origin}${next}`)
+      // 로그인 직후 브라우저가 캐시된(로그아웃 상태) 페이지를 보여주지 않도록 방지
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+      return response
     }
   }
 

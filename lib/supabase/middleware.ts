@@ -43,5 +43,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // 로그인 직후 등 인증 상태가 막 바뀐 시점에 브라우저가 이전 상태를
+  // bfcache/디스크 캐시에서 그대로 복원해 화면이 멈춰 보이는 문제를 방지
+  supabaseResponse.headers.set('Cache-Control', 'no-store, must-revalidate')
+
   return supabaseResponse
 }

@@ -38,7 +38,7 @@ export default function RewardsPage() {
   const [showAdmin, setShowAdmin] = useState(false)
   const missionsRef = useRef<HTMLDivElement>(null)
 
-  const isAdmin = user?.email === "demo@coinname.kr"
+  const isAdmin = user?.email === "winner031128@gmail.com"
 
   const scrollToMissions = () => {
     missionsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
