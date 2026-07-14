@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
@@ -44,8 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  const router = useRouter();
   const supabase = createClient()
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
@@ -101,32 +98,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSupabaseUser(session.user)
         const profile = await fetchProfile(session.user.id)
         setUser(mapProfileToUser(session.user, profile))
-
-        if (event === 'SIGNED_IN') {
-            router.refresh()
-        }
       } else {
         setSupabaseUser(null)
         setUser(null)
-        if (event === 'SIGNED_OUT') {
-            router.refresh()
-        }
       }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [router])
+  }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const {error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
       return { success: false, error: error.message }
+    }
+
+    if (data.user) {
+      setSupabaseUser(data.user)
+      const profile = await fetchProfile(data.user.id)
+      setUser(mapProfileToUser(data.user, profile))
     }
 
     return { success: true }
