@@ -24,7 +24,7 @@ export function AdminVerificationPanel({ isOpen, onClose }: AdminVerificationPan
   const [adminNote, setAdminNote] = useState("")
 
   // 관리자 권한 확인
-  const isAdmin = user?.email === "demo@coinname.kr"
+  const isAdmin = user?.email === "winner031128@gmail.com"
 
   useEffect(() => {
     if (isOpen && isAdmin) {

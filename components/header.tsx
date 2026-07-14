@@ -21,7 +21,7 @@ export function Header() {
   const [showContactPanel, setShowContactPanel] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
 
-  const isAdmin = user?.email === "demo@coinname.kr"
+  const isAdmin = user?.email === "winner031128@gmail.com"
 
   const navItems = [
     { href: "/", label: "홈" },
@@ -61,6 +61,7 @@ export function Header() {
               </Link>
               <Link
                 href="/rewards"
+                prefetch={false}
                 className="flex items-center gap-1 rounded-full bg-lime-400 px-3 py-1.5 text-sm font-bold text-zinc-950 transition-colors hover:bg-lime-300"
               >
                 <Gift className="h-4 w-4" />
@@ -138,6 +139,7 @@ export function Header() {
                   </Link>
                   <Link
                     href="/rewards"
+                    prefetch={false}
                     className="flex items-center justify-center gap-1.5 rounded-full bg-lime-400 px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-lime-300"
                   >
                     <Gift className="h-4 w-4" />

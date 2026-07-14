@@ -31,7 +31,7 @@ export function Footer() {
       { name: "도움말 센터", href: "#" },
       { name: "문의하기", href: "#", onClick: () => setShowContactModal(true) },
       { name: "상태 페이지", href: "#" },
-      { name: "이용약관", href: "#" },
+      { name: "이용약관", href: "/terms" },
     ],
   }
 
@@ -164,10 +164,10 @@ export function Footer() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-3">
               <div className="text-gray-400 text-xs sm:text-sm">© 2024 CoinName. 모든 권리 보유.</div>
               <div className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                   개인정보처리방침
                 </a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/terms" className="text-gray-400 hover:text-white transition-colors">
                   이용약관
                 </a>
                 <a href="#" className="text-gray-400 hover:text-white transition-colors">
